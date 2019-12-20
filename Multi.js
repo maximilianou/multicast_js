@@ -27,7 +27,8 @@ exports.Multi = class Multi {
 
   }
   send({ msg = `Message[${new Date().toISOString().split('T')[0]}]from process ${process.pid}` }) {
-    const message = Buffer.from(msg);
+    //    const message = Buffer.from(msg);
+    const message = msg;
     this.socket.send(message, 0, message.length, this.PORT, this.MULTICAST_ADDR, () => {
       console.info(`Sending message "${message}"`);
     });
