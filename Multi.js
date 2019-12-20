@@ -11,10 +11,8 @@ exports.Multi = class Multi {
     this.socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
     this.socket.bind(this.PORT);
 
-
     this.socket.on("listening", () => {
       this.socket.addMembership(this.MULTICAST_ADDR);
-      this.initInterval();
       this.address = this.socket.address();
       console.log(
         `UDP socket listening on ${this.address.address}:${this.address.port} pid: ${
@@ -24,16 +22,19 @@ exports.Multi = class Multi {
     });
 
     this.socket.on("message", (message, rinfo) => {
-      console.info(`Message from: ${rinfo.address}:${rinfo.port} - ${message}`);
+      console.info(`Message[${new Date().toISOString().split('T')[0]}]from: ${rinfo.address}: ${rinfo.port} - ${message}`);
     });
 
   }
-  initInterval() {
+  send({ msg = `Message[${new Date().toISOString().split('T')[0]}]from process ${process.pid}` }) {
+    const message = Buffer.from(msg);
+    this.socket.send(message, 0, message.length, this.PORT, this.MULTICAST_ADDR, () => {
+      console.info(`Sending message "${message}"`);
+    });
+  }
+  initInterval({ msg }) {
     setInterval(() => {
-      const message = Buffer.from(`Message from process ${process.pid}`);
-      this.socket.send(message, 0, message.length, this.PORT, this.MULTICAST_ADDR, () => {
-        console.info(`Sending message "${message}"`);
-      });
+      this.send({ msg });
     }, 2500);
   }
 };
